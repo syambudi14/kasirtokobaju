@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -17,26 +19,27 @@ Route::get('/', function () {
     return redirect('/login');
 });
 
-Route::get('/login', function () {
-    return view('login.index');
-});
+Route::get('/login', [AuthController::class, 'index'])->name('login');
+Route::post('/login', [AuthController::class, 'authenticate']);
+Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
-Route::post('/login', function () {
-    return redirect('/dashboard');
-});
+Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->middleware('auth');
 
-Route::get('/dashboard', function () {
-    return view('backend.dashboard.index');
-});
+use App\Http\Controllers\TransactionController;
 
-Route::get('/cashier', function () {
-    return view('backend.cashier.index');
-});
+Route::get('/cashier', [TransactionController::class, 'index'])->middleware('auth');
+Route::post('/transactions', [TransactionController::class, 'store'])->middleware('auth');
 
-Route::get('/products', function () {
-    return view('backend.products.index');
-});
+Route::get('/products', [ProductController::class, 'index'])->middleware('auth');
+Route::get('/products/create', [ProductController::class, 'create'])->middleware('auth');
+Route::post('/products', [ProductController::class, 'store'])->middleware('auth');
+Route::delete('/products/{id}', [ProductController::class, 'destroy'])->middleware('auth');
+Route::post('/products/{id}/add-stock', [ProductController::class, 'addStock'])->middleware('auth');
+Route::get('/products/{id}/edit', [ProductController::class, 'edit'])->middleware('auth');
+Route::put('/products/{id}', [ProductController::class, 'update'])->middleware('auth');
 
-Route::get('/logout', function () {
-    return redirect('/login');
-});
+Route::get('/reports', [\App\Http\Controllers\ReportController::class, 'index'])->middleware('auth');
+
+Route::get('/settings', function () {
+    return view('backend.setting.index');
+})->middleware('auth');
